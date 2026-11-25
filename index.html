@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alva's Institute of Engineering and Technology — Campus Stationery Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Ambient Animated Particle Canvas -->
+  <canvas id="bg-particles" aria-hidden="true"></canvas>
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <!-- Toast Notification Stack -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Demo OTP Floating Notification Banner (Simulated SMS / Gmail Inbox) -->
+  <div id="otp-inbox-banner" class="otp-inbox-banner hidden" role="status">
+    <div class="otp-inbox-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+      </svg>
+    </div>
+    <div class="otp-inbox-content">
+      <div class="otp-inbox-meta">
+        <span class="otp-badge">DEMO OTP DELIVERY</span>
+        <span id="otp-inbox-channel">via SMS</span>
+      </div>
+      <p id="otp-inbox-text">Your AIET Stationery verification code is <strong id="otp-inbox-code">------</strong></p>
+    </div>
+    <button type="button" id="btn-autofill-otp" class="btn-autofill-otp">Auto-Fill</button>
+    <button type="button" id="btn-close-otp-banner" class="btn-icon-close" aria-label="Dismiss OTP notification">&times;</button>
+  </div>
+
+  <!-- Top Institutional Navigation Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#home" class="brand" id="brand-home-link">
+        <div class="brand-crest" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <defs>
+              <linearGradient id="crestGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#F59E0B" />
+                <stop offset="100%" stop-color="#D97706" />
+              </linearGradient>
+            </defs>
+            <path d="M32 4L56 14V31C56 46 45.5 56.5 32 60C18.5 56.5 8 46 8 31V14L32 4Z" fill="#0F2147" stroke="url(#crestGrad)" stroke-width="2.5"/>
+            <path d="M20 26L32 20L44 26L32 32L20 26Z" fill="url(#crestGrad)" />
+            <path d="M23 30V41C23 41 27 45 32 45C37 45 41 41 41 41V30" stroke="#F8FAFC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M44 26V36" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="44" cy="38" r="2" fill="#F59E0B"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Alva's Institute of Engineering and Technology</span>
+          <span class="brand-subtitle">Campus Stationery &amp; Academic Supplies Portal &bull; Moodbidri</span>
+        </div>
+      </a>
+
+      <!-- Two Primary Portal Links: Customer & Shopkeeper -->
+      <nav class="portal-nav" aria-label="Portal Navigation">
+        <a href="#customer" id="nav-customer-link" class="portal-link active" data-portal="customer">
+          <span class="portal-dot customer-dot"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span>Customer Portal</span>
+        </a>
+        <a href="#shopkeeper" id="nav-shopkeeper-link" class="portal-link" data-portal="shopkeeper">
+          <span class="portal-dot shopkeeper-dot"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span>Shopkeeper Portal</span>
+        </a>
+      </nav>
+
+      <!-- Header Right Actions -->
+      <div class="header-actions">
+        <button type="button" id="btn-sound-toggle" class="icon-btn" title="Toggle UI Sounds" aria-label="Toggle UI Sounds">
+          <svg id="icon-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+          <svg id="icon-sound-off" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="23" y1="9" x2="17" y2="15"/>
+            <line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+        </button>
+
+        <button type="button" id="btn-header-cart" class="cart-trigger hidden" aria-label="Open shopping cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"/>
+            <circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <span>Cart</span>
+          <span id="header-cart-count" class="cart-badge">0</span>
+        </button>
+
+        <div id="user-session-pill" class="user-pill hidden">
+          <div class="user-avatar" id="user-avatar-initials">S</div>
+          <div class="user-meta">
+            <span id="user-display-name" class="user-name">Student</span>
+            <span id="user-display-role" class="user-role">Verified</span>
+          </div>
+          <button type="button" id="btn-logout" class="btn-logout" title="Sign Out">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- =========================================================
+         VIEW 1: AUTHENTICATION GATEWAY (START OF APP)
+    ========================================================== -->
+    <section id="view-auth" class="view active auth-view">
+      <div class="auth-layout">
+        <!-- Left Institutional Hero Column -->
+        <div class="auth-hero reveal-left">
+          <div class="hero-pill">
+            <span class="pulse-dot"></span>
+            AIET Official Academic Store &bull; Instant Campus Pickup
+          </div>
+          <h1 class="hero-heading">
+            Smart Campus Stationery for
+            <span class="gradient-text">Alva's Institute of Engineering &amp; Technology</span>
+          </h1>
+          <p class="hero-copy">
+            Order official University Blue Books, Yellow Assignment Books, Engineering Graph Sheets, A4 Paper Bundles, and Rough Notebooks online. Real-time stock synced directly with the campus storekeeper and instant UPI payments via Google Pay &amp; PhonePe.
+          </p>
+
+          <!-- Animated Floating Stationery Showcase -->
+          <div class="floating-showcase">
+            <div class="float-card float-1">
+              <div class="float-swatch blue"></div>
+              <div>
+                <strong>Blue Book</strong>
+                <span>Exam &amp; Lab Ready</span>
+              </div>
+            </div>
+            <div class="float-card float-2">
+              <div class="float-swatch yellow"></div>
+              <div>
+                <strong>Yellow Book</strong>
+                <span>Record &amp; Assignment</span>
+              </div>
+            </div>
+            <div class="float-card float-3">
+              <div class="float-swatch emerald"></div>
+              <div>
+                <strong>Graph &amp; A4</strong>
+                <span>Precision Sheets</span>
+              </div>
+            </div>
+            <div class="float-card float-4">
+              <div class="float-swatch amber"></div>
+              <div>
+                <strong>Rough Book</strong>
+                <span>200 Pages Heavy</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direct Two-Link Quick Switcher Cards -->
+          <div class="quick-portal-links">
+            <a href="#customer" class="quick-link-card" data-auth-tab="student">
+              <div class="ql-icon customer-bg">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+              </div>
+              <div>
+                <strong>Customer / Student Link</strong>
+                <span>Gmail or Phone + OTP Verification</span>
+              </div>
+              <span class="ql-arrow">&rarr;</span>
+            </a>
+            <a href="#shopkeeper" class="quick-link-card" data-auth-tab="shopkeeper">
+              <div class="ql-icon shopkeeper-bg">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <div>
+                <strong>Shopkeeper Link</strong>
+                <span>Secret Code Protected Inventory</span>
+              </div>
+              <span class="ql-arrow">&rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Authentication Card -->
+        <div class="auth-card-wrapper reveal-right">
+          <div class="auth-card glass-panel">
+            <!-- Role Switcher Tabs -->
+            <div class="auth-role-tabs" role="tablist">
+              <button type="button" id="tab-student-login" class="role-tab active" role="tab" aria-selected="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Student Login
+              </button>
+              <button type="button" id="tab-shopkeeper-login" class="role-tab" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Shopkeeper Login
+              </button>
+              <div class="role-tab-slider" id="role-tab-slider"></div>
+            </div>
+
+            <!-- STUDENT / CUSTOMER LOGIN PANEL -->
+            <div id="panel-student-login" class="auth-panel active">
+              <div class="panel-header">
+                <h2>Student Portal Sign In</h2>
+                <p>Verify with your Gmail or Phone Number via 6-digit OTP</p>
+              </div>
+
+              <!-- Method Toggle: Gmail vs Phone -->
+              <div class="method-toggle">
+                <button type="button" id="btn-method-gmail" class="method-btn active">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                  Gmail
+                </button>
+                <button type="button" id="btn-method-phone" class="method-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                  </svg>
+                  Phone Number
+                </button>
+              </div>
+
+              <!-- Step 1: Enter Contact Info -->
+              <form id="form-student-request-otp" class="auth-form">
+                <div class="form-row-2">
+                  <div class="input-group">
+                    <label for="student-name">Student Name</label>
+                    <input type="text" id="student-name" placeholder="e.g. Aarav Shetty" required />
+                  </div>
+                  <div class="input-group">
+                    <label for="student-usn">USN (Optional)</label>
+                    <input type="text" id="student-usn" placeholder="e.g. 4AL23CS012" />
+                  </div>
+                </div>
+
+                <div class="input-group" id="group-gmail-input">
+                  <label for="student-gmail">Gmail Address</label>
+                  <div class="input-with-icon">
+                    <span class="input-prefix">@</span>
+                    <input type="email" id="student-gmail" placeholder="yourname@gmail.com" />
+                  </div>
+                </div>
+
+                <div class="input-group hidden" id="group-phone-input">
+                  <label for="student-phone">Mobile Number (10 digits)</label>
+                  <div class="input-with-icon">
+                    <span class="input-prefix">+91</span>
+                    <input type="tel" id="student-phone" placeholder="9876543210" maxlength="10" />
+                  </div>
+                </div>
+
+                <button type="submit" id="btn-send-otp" class="btn-primary btn-full">
+                  <span>Send Verification OTP</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
+              </form>
+
+              <!-- Step 2: OTP Verification -->
+              <form id="form-student-verify-otp" class="auth-form hidden">
+                <div class="otp-sent-info">
+                  <span>OTP sent to <strong id="otp-target-label"></strong></span>
+                  <button type="button" id="btn-change-contact" class="link-btn">Change</button>
+                </div>
+
+                <label class="otp-label">Enter 6-Digit OTP</label>
+                <div class="otp-boxes" id="otp-boxes">
+                  <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" aria-label="OTP Digit 1" />
+                  <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" aria-label="OTP Digit 2" />
+                  <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" aria-label="OTP Digit 3" />
+                  <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" aria-label="OTP Digit 4" />
+                  <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" aria-label="OTP Digit 5" />
+                  <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" aria-label="OTP Digit 6" />
+                </div>
+
+                <div class="otp-timer-row">
+                  <span id="otp-countdown-text">Resend OTP in <strong>45s</strong></span>
+                  <button type="button" id="btn-resend-otp" class="link-btn hidden">Resend OTP</button>
+                </div>
+
+                <button type="submit" id="btn-verify-otp" class="btn-primary btn-full">
+                  <span>Verify OTP &amp; Enter Store</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+
+            <!-- SHOPKEEPER LOGIN PANEL -->
+            <div id="panel-shopkeeper-login" class="auth-panel hidden">
+              <div class="panel-header">
+                <h2>Shopkeeper Admin Sign In</h2>
+                <p>Authorized store staff only. Enter your campus secret code.</p>
+              </div>
+
+              <form id="form-shopkeeper-login" class="auth-form">
+                <div class="input-group">
+                  <label for="shopkeeper-name">Store Manager Name</label>
+                  <input type="text" id="shopkeeper-name" value="AIET Store Manager" required />
+                </div>
+
+                <div class="input-group">
+                  <label for="shopkeeper-secret">Shopkeeper Secret Code</label>
+                  <div class="input-with-action">
+                    <input type="password" id="shopkeeper-secret" placeholder="Enter secret access code" required />
+                    <button type="button" id="btn-toggle-secret" class="btn-eye" aria-label="Toggle secret code visibility">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="demo-secret-hint">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                  <span>Campus Store Demo Secret Code: <code id="demo-code-copy" title="Click to fill">AIET2026</code></span>
+                </div>
+
+                <button type="submit" class="btn-gold btn-full">
+                  <span>Unlock Shopkeeper Portal</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         VIEW 2: CUSTOMER / STUDENT STOREFRONT PORTAL
+    ========================================================== -->
+    <section id="view-customer" class="view hidden">
+      <!-- Storefront Hero Banner -->
+      <div class="store-hero glass-panel">
+        <div class="store-hero-content">
+          <div class="hero-tag">Alva's Institute of Engineering and Technology &bull; Student Counter</div>
+          <h2>Campus Stationery Store</h2>
+          <p>Select any available quantity, add to cart, or order directly with Google Pay, PhonePe, Paytm &amp; UPI.</p>
+        </div>
+        <div class="store-hero-stats">
+          <div class="mini-stat">
+            <span class="mini-stat-val" id="cust-stat-items">0</span>
+            <span class="mini-stat-lbl">Items Available</span>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-val" id="cust-stat-orders">0</span>
+            <span class="mini-stat-lbl">My Orders</span>
+          </div>
+          <button type="button" id="btn-view-my-orders" class="btn-outline-light">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            Order History &amp; Tokens
+          </button>
+        </div>
+      </div>
+
+      <!-- Search & Category Filter Toolbar -->
+      <div class="catalog-toolbar">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="search" id="customer-search" placeholder="Search Blue Book, Yellow Book, Graph, A4 Sheet, Rough Book..." />
+        </div>
+        <div class="category-pills" id="customer-category-pills">
+          <button type="button" class="cat-pill active" data-category="All">All Items</button>
+          <button type="button" class="cat-pill" data-category="Exam & Record Books">Exam &amp; Record Books</button>
+          <button type="button" class="cat-pill" data-category="Sheets & Graph">Sheets &amp; Graph</button>
+          <button type="button" class="cat-pill" data-category="Notebooks">Notebooks</button>
+          <button type="button" class="cat-pill" data-category="Writing & Tools">Writing &amp; Tools</button>
+        </div>
+      </div>
+
+      <!-- Product Grid -->
+      <div id="customer-product-grid" class="product-grid"></div>
+
+      <!-- Empty State -->
+      <div id="customer-empty-state" class="empty-state hidden">
+        <p>No stationery items matched your search.</p>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         VIEW 3: SHOPKEEPER INVENTORY & ORDER MANAGEMENT PORTAL
+    ========================================================== -->
+    <section id="view-shopkeeper" class="view hidden">
+      <!-- Shopkeeper Top Header & KPI Cards -->
+      <div class="shop-header">
+        <div>
+          <div class="hero-tag gold">Shopkeeper Admin Console &bull; Live Sync</div>
+          <h2>Inventory &amp; Order Management</h2>
+          <p>Add new stationery items, update available stock quantities, and manage student pickup orders.</p>
+        </div>
+        <div class="shop-header-actions">
+          <button type="button" id="btn-open-add-item" class="btn-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Stationery Item
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Stats Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="kpi-label">Catalog Items</span>
+            <strong class="kpi-value" id="kpi-total-items">0</strong>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon emerald">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div>
+            <span class="kpi-label">Total Units in Stock</span>
+            <strong class="kpi-value" id="kpi-total-stock">0</strong>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div>
+            <span class="kpi-label">Low / Out of Stock</span>
+            <strong class="kpi-value" id="kpi-low-stock">0</strong>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <span class="kpi-label">Total Store Revenue</span>
+            <strong class="kpi-value" id="kpi-revenue">&#8377;0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shopkeeper Sub-Tabs: Inventory vs Student Orders vs Settings -->
+      <div class="shop-tabs">
+        <button type="button" class="shop-tab active" data-shop-tab="inventory">Inventory &amp; Stock Control</button>
+        <button type="button" class="shop-tab" data-shop-tab="orders">
+          Student Orders
+          <span id="badge-pending-orders" class="tab-badge">0</span>
+        </button>
+        <button type="button" class="shop-tab" data-shop-tab="settings">Store Settings</button>
+      </div>
+
+      <!-- Tab 1: Inventory Table -->
+      <div id="shop-panel-inventory" class="shop-panel active glass-panel">
+        <div class="table-toolbar">
+          <div class="search-box compact">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="search" id="shop-search-inventory" placeholder="Filter inventory by name or category..." />
+          </div>
+          <span class="sync-indicator"><span class="pulse-dot"></span> Live synced with Customer Portal</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Price (&#8377;)</th>
+                <th>Available Quantity</th>
+                <th>Quick Restock</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="shop-inventory-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: Student Orders Table -->
+      <div id="shop-panel-orders" class="shop-panel hidden glass-panel">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order / Token</th>
+                <th>Student</th>
+                <th>Items Ordered</th>
+                <th>Payment</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="shop-orders-tbody"></tbody>
+          </table>
+        </div>
+        <div id="shop-orders-empty" class="empty-state hidden">
+          <p>No student orders have been placed yet.</p>
+        </div>
+      </div>
+
+      <!-- Tab 3: Store Settings -->
+      <div id="shop-panel-settings" class="shop-panel hidden glass-panel settings-panel">
+        <h3>Store Security &amp; UPI Settings</h3>
+        <form id="form-shop-settings" class="settings-form">
+          <div class="input-group">
+            <label for="setting-upi-id">Store Merchant UPI ID (for Google Pay / PhonePe QR)</label>
+            <input type="text" id="setting-upi-id" value="aiet.stationery@okicici" required />
+          </div>
+          <div class="input-group">
+            <label for="setting-secret-code">Update Shopkeeper Secret Code</label>
+            <input type="text" id="setting-secret-code" value="AIET2026" required />
+          </div>
+          <div class="settings-actions">
+            <button type="submit" class="btn-primary">Save Settings</button>
+            <button type="button" id="btn-reset-demo" class="btn-danger-outline">Reset Demo Catalog &amp; Orders</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================
+       SLIDING CART DRAWER
+  ========================================================== -->
+  <div id="cart-backdrop" class="drawer-backdrop hidden"></div>
+  <aside id="cart-drawer" class="cart-drawer" aria-label="Shopping Cart">
+    <div class="drawer-header">
+      <div>
+        <h3>Your Stationery Cart</h3>
+        <span id="cart-drawer-subtitle">0 items selected</span>
+      </div>
+      <button type="button" id="btn-close-cart" class="btn-icon-close" aria-label="Close cart">&times;</button>
+    </div>
+
+    <div id="cart-items-list" class="cart-items-list"></div>
+
+    <div id="cart-empty-view" class="cart-empty-view">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="9" cy="21" r="1"/>
+        <circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      <h4>Your cart is empty</h4>
+      <p>Pick Blue Books, Yellow Books, Graph Sheets, A4 Paper, or Rough Books from the store.</p>
+    </div>
+
+    <div id="cart-footer" class="drawer-footer hidden">
+      <div class="summary-rows">
+        <div class="summary-row">
+          <span>Items Subtotal</span>
+          <span id="cart-subtotal">&#8377;0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Campus Handling Fee</span>
+          <span class="free-tag">FREE</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total Payable</span>
+          <strong id="cart-total">&#8377;0.00</strong>
+        </div>
+      </div>
+      <button type="button" id="btn-proceed-checkout" class="btn-primary btn-full">
+        <span>Proceed to Payment (GPay / PhonePe)</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- =========================================================
+       MODAL 1: AUTHENTIC UPI & PAYMENT GATEWAY MODAL
+  ========================================================== -->
+  <div id="payment-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="pay-modal-title">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog payment-dialog glass-panel">
+      <div class="modal-header">
+        <div class="pay-brand-head">
+          <div class="pay-shield">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+          </div>
+          <div>
+            <h3 id="pay-modal-title">AIET Secure Checkout</h3>
+            <span class="pay-merchant-sub">Alva's Institute of Engineering &amp; Technology Store</span>
+          </div>
+        </div>
+        <button type="button" id="btn-close-payment" class="btn-icon-close" aria-label="Close payment">&times;</button>
+      </div>
+
+      <div class="pay-amount-banner">
+        <div>
+          <span class="pay-banner-lbl">Total Payable Amount</span>
+          <strong id="pay-total-display" class="pay-banner-amt">&#8377;0.00</strong>
+        </div>
+        <div class="pay-order-items-pill" id="pay-items-count-pill">0 items</div>
+      </div>
+
+      <!-- Step A: Payment Method Selection & Interaction -->
+      <div id="pay-step-select" class="pay-step">
+        <div class="pay-methods-grid">
+          <button type="button" class="pay-app-card active" data-method="Google Pay">
+            <div class="app-logo gpay-logo">
+              <span class="g-blue">G</span><span class="g-red">P</span><span class="g-yellow">a</span><span class="g-green">y</span>
+            </div>
+            <span>Google Pay</span>
+            <small>UPI Instant</small>
+          </button>
+
+          <button type="button" class="pay-app-card" data-method="PhonePe">
+            <div class="app-logo phonepe-logo">&#2346;</div>
+            <span>PhonePe</span>
+            <small>UPI / Wallet</small>
+          </button>
+
+          <button type="button" class="pay-app-card" data-method="Paytm / BHIM UPI">
+            <div class="app-logo paytm-logo">UPI</div>
+            <span>Paytm / BHIM</span>
+            <small>Any UPI App</small>
+          </button>
+
+          <button type="button" class="pay-app-card" data-method="Debit / Credit Card">
+            <div class="app-logo card-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+            </div>
+            <span>Card</span>
+            <small>Visa / RuPay</small>
+          </button>
+
+          <button type="button" class="pay-app-card" data-method="Campus Counter Cash">
+            <div class="app-logo cash-logo">&#8377;</div>
+            <span>Counter Pay</span>
+            <small>Cash on Pickup</small>
+          </button>
+        </div>
+
+        <!-- Dynamic Payment Body -->
+        <div id="pay-upi-section" class="pay-detail-box">
+          <div class="upi-mode-tabs">
+            <button type="button" id="btn-upi-qr-tab" class="upi-subtab active">Scan UPI QR Code</button>
+            <button type="button" id="btn-upi-id-tab" class="upi-subtab">Enter UPI ID</button>
+          </div>
+
+          <!-- QR Code Sub-view -->
+          <div id="upi-qr-panel" class="upi-qr-panel">
+            <div class="qr-frame">
+              <div id="qr-svg-container" class="qr-svg-container"></div>
+              <div class="qr-scan-laser"></div>
+            </div>
+            <div class="qr-info">
+              <div class="selected-app-badge" id="selected-upi-badge">Google Pay UPI</div>
+              <p>Scan this live UPI QR using <strong id="selected-upi-name">Google Pay</strong> or any UPI app on your phone.</p>
+              <div class="upi-merchant-chip">
+                <span>Merchant UPI:</span>
+                <code id="pay-merchant-upi-display">aiet.stationery@okicici</code>
+              </div>
+              <div class="upi-actions-row">
+                <a id="btn-upi-deeplink" href="#" class="btn-outline-dark">Open UPI App</a>
+                <button type="button" id="btn-confirm-qr-paid" class="btn-primary">
+                  <span>Complete &amp; Verify Payment</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- UPI ID Sub-view -->
+          <div id="upi-id-panel" class="upi-id-panel hidden">
+            <div class="input-group">
+              <label for="input-customer-upi">Your UPI ID / VPA</label>
+              <input type="text" id="input-customer-upi" placeholder="e.g. aaravshetty@okicici" />
+            </div>
+            <div class="upi-handle-chips">
+              <button type="button" class="handle-chip" data-handle="@okicici">@okicici</button>
+              <button type="button" class="handle-chip" data-handle="@okaxis">@okaxis</button>
+              <button type="button" class="handle-chip" data-handle="@ybl">@ybl (PhonePe)</button>
+              <button type="button" class="handle-chip" data-handle="@paytm">@paytm</button>
+              <button type="button" class="handle-chip" data-handle="@oksbi">@oksbi</button>
+            </div>
+            <button type="button" id="btn-pay-upi-id" class="btn-primary btn-full">
+              <span>Send Payment Request &amp; Pay</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card Sub-view -->
+        <div id="pay-card-section" class="pay-detail-box hidden">
+          <div class="input-group">
+            <label for="card-number">Card Number</label>
+            <input type="text" id="card-number" placeholder="4532  ••••  ••••  8841" maxlength="19" />
+          </div>
+          <div class="form-row-2">
+            <div class="input-group">
+              <label for="card-expiry">Expiry (MM/YY)</label>
+              <input type="text" id="card-expiry" placeholder="08/29" maxlength="5" />
+            </div>
+            <div class="input-group">
+              <label for="card-cvv">CVV</label>
+              <input type="password" id="card-cvv" placeholder="•••" maxlength="3" />
+            </div>
+          </div>
+          <button type="button" id="btn-pay-card" class="btn-primary btn-full">Pay Securely Now</button>
+        </div>
+
+        <!-- Counter Cash Sub-view -->
+        <div id="pay-cash-section" class="pay-detail-box hidden">
+          <div class="cash-info-box">
+            <h4>Pay at AIET Stationery Counter</h4>
+            <p>Your stock will be reserved immediately with a pickup token. Pay cash or scan counter QR when collecting your items.</p>
+          </div>
+          <button type="button" id="btn-pay-cash" class="btn-gold btn-full">Reserve Items &amp; Generate Token</button>
+        </div>
+
+        <p class="sandbox-disclaimer">
+          Interactive UPI Checkout Sandbox &bull; Generates valid <code>upi://pay</code> links &amp; simulated UTR verification.
+        </p>
+      </div>
+
+      <!-- Step B: Processing Animation -->
+      <div id="pay-step-processing" class="pay-step hidden pay-processing-view">
+        <div class="pulse-rings">
+          <div class="ring"></div>
+          <div class="ring"></div>
+          <div class="ring-core" id="processing-app-badge">UPI</div>
+        </div>
+        <h3 id="processing-title">Connecting to Google Pay...</h3>
+        <p id="processing-subtitle">Awaiting bank authorization &amp; NPCI verification</p>
+        <div class="progress-track">
+          <div class="progress-bar" id="pay-progress-bar"></div>
+        </div>
+      </div>
+
+      <!-- Step C: Payment Success Receipt -->
+      <div id="pay-step-success" class="pay-step hidden pay-success-view">
+        <div class="success-check-wrap">
+          <svg class="checkmark-svg" viewBox="0 0 52 52">
+            <circle class="checkmark-circle" cx="26" cy="26" r="24" fill="none" />
+            <path class="checkmark-check" fill="none" d="M14 27l7 7 16-16" />
+          </svg>
+        </div>
+        <div class="paid-stamp">PAID &amp; CONFIRMED</div>
+        <h3>Order Placed Successfully!</h3>
+        <p class="receipt-sub">Show this Pickup Token at the AIET Stationery Counter</p>
+
+        <div class="receipt-card" id="receipt-card-content">
+          <div class="receipt-token-row">
+            <span>PICKUP TOKEN</span>
+            <strong id="receipt-token">#AIET-000</strong>
+          </div>
+          <div class="receipt-meta-grid">
+            <div><small>Student</small><span id="receipt-student">-</span></div>
+            <div><small>Method</small><span id="receipt-method">-</span></div>
+            <div><small>UTR / Ref ID</small><span id="receipt-utr">-</span></div>
+            <div><small>Total Paid</small><strong id="receipt-amount">&#8377;0</strong></div>
+          </div>
+          <div id="receipt-items-summary" class="receipt-items-summary"></div>
+        </div>
+
+        <div class="receipt-actions">
+          <button type="button" id="btn-print-receipt" class="btn-outline-dark">Print Receipt</button>
+          <button type="button" id="btn-done-receipt" class="btn-primary">Back to Store</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 2: SHOPKEEPER ADD / EDIT ITEM MODAL
+  ========================================================== -->
+  <div id="item-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="item-modal-title">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog glass-panel">
+      <div class="modal-header">
+        <h3 id="item-modal-title">Add Stationery Item</h3>
+        <button type="button" id="btn-close-item-modal" class="btn-icon-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-item-crud" class="modal-form">
+        <input type="hidden" id="item-edit-id" />
+        <div class="input-group">
+          <label for="item-name">Item Name</label>
+          <input type="text" id="item-name" placeholder="e.g. Blue Book (University Exam)" required />
+        </div>
+        <div class="form-row-2">
+          <div class="input-group">
+            <label for="item-category">Category</label>
+            <select id="item-category" required>
+              <option value="Exam & Record Books">Exam &amp; Record Books</option>
+              <option value="Sheets & Graph">Sheets &amp; Graph</option>
+              <option value="Notebooks">Notebooks</option>
+              <option value="Writing & Tools">Writing &amp; Tools</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="item-unit">Unit Label</label>
+            <input type="text" id="item-unit" placeholder="e.g. Book, Sheet, Pack" required />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="input-group">
+            <label for="item-price">Price per Unit (&#8377;)</label>
+            <input type="number" id="item-price" min="1" step="0.5" placeholder="15" required />
+          </div>
+          <div class="input-group">
+            <label for="item-stock">Available Quantity</label>
+            <input type="number" id="item-stock" min="0" step="1" placeholder="100" required />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="input-group">
+            <label for="item-theme">Visual Theme / Color</label>
+            <select id="item-theme">
+              <option value="blue">Blue Book Cobalt</option>
+              <option value="yellow">Yellow Book Saffron</option>
+              <option value="graph">Graph Emerald Grid</option>
+              <option value="a4">Crisp A4 White / Slate</option>
+              <option value="rough">Rough Book Amber Kraft</option>
+              <option value="indigo">Lab Indigo</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="item-badge">Tag (Optional)</label>
+            <input type="text" id="item-badge" placeholder="e.g. Exam Essential" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="item-desc">Short Description</label>
+          <textarea id="item-desc" rows="2" placeholder="Pages, GSM, size, or specification..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="btn-cancel-item-modal" class="btn-outline-dark">Cancel</button>
+          <button type="submit" class="btn-gold">Save Stationery Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 3: STUDENT ORDER HISTORY & TOKENS MODAL
+  ========================================================== -->
+  <div id="orders-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="orders-modal-title">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog wide-dialog glass-panel">
+      <div class="modal-header">
+        <h3 id="orders-modal-title">My Stationery Orders &amp; Pickup Tokens</h3>
+        <button type="button" id="btn-close-orders-modal" class="btn-icon-close" aria-label="Close">&times;</button>
+      </div>
+      <div id="student-orders-list" class="student-orders-list"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>Alva's Institute of Engineering and Technology</strong>
+        <span> &mdash; Campus Stationery &amp; Academic Supplies System</span>
+      </div>
+      <div class="footer-links">
+        <a href="#customer" data-portal="customer">Customer Portal</a>
+        <span>&bull;</span>
+        <a href="#shopkeeper" data-portal="shopkeeper">Shopkeeper Portal</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts (Classic deferred scripts so file:// and http:// both work seamlessly) -->
+  <script defer src="js/data.js"></script>
+  <script defer src="js/store.js"></script>
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/payments.js"></script>
+  <script defer src="js/app.js"></script>
+</body>
+</html>
